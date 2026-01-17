@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@services/*": ["src/services/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@routes/*": ["src/routes/*"],
+      "@utils/*": ["src/utils/*"],
+      "@validators/*": ["src/validators/*"],
+      "@types/*": ["src/types/*"],
+      "@config/*": ["src/config/*"]
+    }
+  },
+  "include": ["src/**/*", "prisma/**/*", "../projet-pratique/backend/src/controllers/auth.controller.ts", "../projet-pratique/backend/src/controllers/dashboard.controller.ts", "../projet-pratique/backend/src/controllers/maintenance.controller.ts", "../projet-pratique/backend/src/controllers/notification.controller.ts", "../projet-pratique/backend/src/controllers/reservation.controller.ts", "../projet-pratique/backend/src/controllers/user.controller.ts", "../projet-pratique/backend/src/controllers/vehicle.controller.ts"],
+  "exclude": ["node_modules", "dist", "tests"]
+}
