@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as maintenanceService from '../../../../backend/src/services/maintenance.service.js';
+import * as maintenanceService from '../services/maintenance.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function createMaintenance(
@@ -30,7 +30,7 @@ export async function getMaintenances(
 ): Promise<void> {
   try {
     const result = await maintenanceService.getMaintenances(
-      req.query as Record<string, string>
+      req.query as unknown as Parameters<typeof maintenanceService.getMaintenances>[0]
     );
 
     res.status(200).json({
@@ -49,7 +49,7 @@ export async function getMaintenanceById(
 ): Promise<void> {
   try {
     const maintenance = await maintenanceService.getMaintenanceById(
-      req.params.id
+      req.params.id as string
     );
 
     res.status(200).json({
@@ -68,7 +68,7 @@ export async function updateMaintenance(
 ): Promise<void> {
   try {
     const maintenance = await maintenanceService.updateMaintenance(
-      req.params.id,
+      req.params.id as string,
       req.body,
       req.user!.id
     );
@@ -90,7 +90,7 @@ export async function startMaintenance(
 ): Promise<void> {
   try {
     const maintenance = await maintenanceService.startMaintenance(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body
     );
@@ -112,7 +112,7 @@ export async function completeMaintenance(
 ): Promise<void> {
   try {
     const maintenance = await maintenanceService.completeMaintenance(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body
     );
@@ -134,7 +134,7 @@ export async function cancelMaintenance(
 ): Promise<void> {
   try {
     const maintenance = await maintenanceService.cancelMaintenance(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body.reason
     );
@@ -191,7 +191,7 @@ export async function getVehicleMaintenanceHistory(
 ): Promise<void> {
   try {
     const maintenances = await maintenanceService.getVehicleMaintenanceHistory(
-      req.params.vehicleId
+      req.params.vehicleId as string
     );
 
     res.status(200).json({

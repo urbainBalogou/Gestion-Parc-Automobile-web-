@@ -217,7 +217,7 @@ export async function createReservation(
       action: 'CREATE',
       entityType: 'reservation',
       entityId: reservation.id,
-      newValue: { referenceNumber: reservation.referenceNumber } as Prisma.InputJsonValue,
+      newValues: { referenceNumber: reservation.referenceNumber } as Prisma.InputJsonValue,
     },
   });
 
@@ -431,8 +431,8 @@ export async function updateReservation(
       action: 'UPDATE',
       entityType: 'reservation',
       entityId: id,
-      oldValue: reservation as unknown as Prisma.InputJsonValue,
-      newValue: data as Prisma.InputJsonValue,
+      oldValues: reservation as unknown as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
@@ -511,7 +511,7 @@ export async function approveReservation(
       action: 'APPROVAL',
       entityType: 'reservation',
       entityId: id,
-      newValue: { status: 'APPROVED', comment } as Prisma.InputJsonValue,
+      newValues: { status: 'APPROVED', comment } as Prisma.InputJsonValue,
     },
   });
 
@@ -580,7 +580,7 @@ export async function rejectReservation(
       action: 'REJECTION',
       entityType: 'reservation',
       entityId: id,
-      newValue: { status: 'REJECTED', reason } as Prisma.InputJsonValue,
+      newValues: { status: 'REJECTED', reason } as Prisma.InputJsonValue,
     },
   });
 
@@ -623,8 +623,8 @@ export async function cancelReservation(
       action: 'STATUS_CHANGE',
       entityType: 'reservation',
       entityId: id,
-      oldValue: { status: reservation.status } as Prisma.InputJsonValue,
-      newValue: { status: 'CANCELLED', reason } as Prisma.InputJsonValue,
+      oldValues: { status: reservation.status } as Prisma.InputJsonValue,
+      newValues: { status: 'CANCELLED', reason } as Prisma.InputJsonValue,
     },
   });
 

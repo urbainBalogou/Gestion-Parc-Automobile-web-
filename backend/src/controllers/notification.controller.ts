@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as notificationService from '../../../../backend/src/services/notification.service.js';
+import * as notificationService from '../services/notification.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function getNotifications(
@@ -54,7 +54,7 @@ export async function markAsRead(
   try {
     const notification = await notificationService.markAsRead(
       req.user!.id,
-      req.params.id
+      req.params.id as string
     );
 
     res.status(200).json({
@@ -89,7 +89,7 @@ export async function deleteNotification(
   next: NextFunction
 ): Promise<void> {
   try {
-    await notificationService.deleteNotification(req.user!.id, req.params.id);
+    await notificationService.deleteNotification(req.user!.id, req.params.id as string);
 
     res.status(200).json({
       success: true,

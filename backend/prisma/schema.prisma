@@ -51,6 +51,7 @@ enum Transmission {
 }
 
 enum ReservationStatus {
+  DRAFT
   PENDING
   APPROVED
   REJECTED
@@ -86,6 +87,8 @@ enum NotificationType {
   RESERVATION_REJECTED
   RESERVATION_CANCELLED
   RESERVATION_REMINDER
+  RESERVATION_STARTED
+  RESERVATION_ENDED
   MAINTENANCE_SCHEDULED
   MAINTENANCE_DUE
   VEHICLE_AVAILABLE
@@ -93,27 +96,42 @@ enum NotificationType {
   SYSTEM
 }
 
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 // ==================== MODELS ====================
 
 model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
-  password            String
-  firstName           String
-  lastName            String
-  phone               String?
-  avatar              String?
-  role                Role      @default(EMPLOYEE)
-  isActive            Boolean   @default(true)
-  twoFactorEnabled    Boolean   @default(false)
-  twoFactorSecret     String?
-  departmentId        String?
-  lastLogin           DateTime?
-  passwordChangedAt   DateTime?
-  passwordResetToken  String?
-  passwordResetExpires DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  password               String
+  firstName              String
+  lastName               String
+  phone                  String?
+  avatar                 String?
+  role                   Role      @default(EMPLOYEE)
+  isActive               Boolean   @default(true)
+  isEmailVerified        Boolean   @default(false)
+  twoFactorEnabled       Boolean   @default(false)
+  twoFactorSecret        String?
+  departmentId           String?
+  lastLogin              DateTime?
+  lastLoginAt            DateTime?
+  lastLoginIp            String?
+  passwordChangedAt      DateTime?
+  failedLoginAttempts    Int       @default(0)
+  lockedUntil            DateTime?
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  driverLicenseNumber    String?
+  driverLicenseExpiry    DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   // Relations
   department              Department?              @relation(fields: [departmentId], references: [id])
@@ -140,8 +158,10 @@ model Session {
   refreshToken String   @unique
   userAgent    String?
   ipAddress    String?
+  isValid      Boolean  @default(true)
   expiresAt    DateTime
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -159,7 +179,8 @@ model Department {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users User[]
+  users        User[]
+  reservations Reservation[]
 
   @@index([code])
 }
@@ -179,29 +200,37 @@ model Location {
 }
 
 model Vehicle {
-  id                         String        @id @default(uuid())
-  registrationNumber         String        @unique
-  brand                      String
-  model                      String
-  year                       Int
-  type                       VehicleType
-  fuelType                   FuelType
-  transmission               Transmission
-  seats                      Int
-  color                      String?
-  vin                        String?       @unique
-  status                     VehicleStatus @default(AVAILABLE)
-  currentMileage             Int           @default(0)
-  dailyRate                  Float?
-  features                   String[]
-  notes                      String?
-  qrCode                     String?       @unique
-  insuranceExpiry            DateTime?
-  technicalInspectionExpiry  DateTime?
-  locationId                 String?
-  isActive                   Boolean       @default(true)
-  createdAt                  DateTime      @default(now())
-  updatedAt                  DateTime      @updatedAt
+  id                        String        @id @default(uuid())
+  registrationNumber        String        @unique
+  brand                     String
+  model                     String
+  year                      Int
+  type                      VehicleType
+  fuelType                  FuelType
+  transmission              Transmission
+  seats                     Int
+  doors                     Int?
+  color                     String?
+  engineCapacity            Float?
+  horsePower                Int?
+  vin                       String?       @unique
+  status                    VehicleStatus @default(AVAILABLE)
+  currentMileage            Int           @default(0)
+  fuelConsumption           Float?
+  acquisitionCost           Float?
+  dailyRate                 Float?
+  mileageRate               Float?
+  features                  String[]
+  notes                     String?
+  qrCode                    String?       @unique
+  insuranceExpiry           DateTime?
+  technicalInspectionExpiry DateTime?
+  lastServiceDate           DateTime?
+  lastServiceMileage        Int?
+  locationId                String?
+  isActive                  Boolean       @default(true)
+  createdAt                 DateTime      @default(now())
+  updatedAt                 DateTime      @updatedAt
 
   // Relations
   location         Location?         @relation(fields: [locationId], references: [id])
@@ -243,48 +272,70 @@ model FavoriteVehicle {
 }
 
 model Reservation {
-  id              String            @id @default(uuid())
-  referenceNumber String            @unique
-  userId          String
-  vehicleId       String
-  driverId        String?
-  approvedById    String?
-  startDate       DateTime
-  endDate         DateTime
-  purpose         String?
-  destination     String?
-  passengers      Int?
-  status          ReservationStatus @default(PENDING)
-  startMileage    Int?
-  endMileage      Int?
-  notes           String?
-  rejectionReason String?
-  checkedInAt     DateTime?
-  checkedOutAt    DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  referenceNumber  String            @unique
+  userId           String
+  vehicleId        String
+  departmentId     String?
+  driverId         String?
+  approvedById     String?
+  startDate        DateTime
+  endDate          DateTime
+  purpose          String?
+  destination      String?
+  passengers       Int?
+  passengerCount   Int?
+  estimatedMileage Int?
+  needsDriver      Boolean           @default(false)
+  isRecurring      Boolean           @default(false)
+  recurringPattern String?
+  estimatedCost    Float?
+  status           ReservationStatus @default(PENDING)
+  startMileage     Int?
+  endMileage       Int?
+  checkInMileage   Int?
+  checkOutMileage  Int?
+  checkInNotes     String?
+  checkOutNotes    String?
+  actualStartDate  DateTime?
+  actualEndDate    DateTime?
+  actualMileage    Int?
+  actualCost       Float?
+  rating           Int?
+  feedback         String?
+  notes            String?
+  rejectionReason  String?
+  approvedAt       DateTime?
+  checkedInAt      DateTime?
+  checkedOutAt     DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   // Relations
-  user       User                  @relation("UserReservations", fields: [userId], references: [id])
-  vehicle    Vehicle               @relation(fields: [vehicleId], references: [id])
-  driver     User?                 @relation("DriverReservations", fields: [driverId], references: [id])
-  approvedBy User?                 @relation("ApprovedReservations", fields: [approvedById], references: [id])
+  department Department?          @relation(fields: [departmentId], references: [id])
+  user       User                 @relation("UserReservations", fields: [userId], references: [id])
+  vehicle    Vehicle              @relation(fields: [vehicleId], references: [id])
+  driver     User?                @relation("DriverReservations", fields: [driverId], references: [id])
+  approvedBy User?                @relation("ApprovedReservations", fields: [approvedById], references: [id])
   history    ReservationHistory[]
+  documents  Document[]
 
   @@index([userId])
   @@index([vehicleId])
+  @@index([departmentId])
   @@index([status])
   @@index([startDate, endDate])
   @@index([referenceNumber])
 }
 
 model ReservationHistory {
-  id            String            @id @default(uuid())
-  reservationId String
-  status        ReservationStatus
-  comment       String?
-  changedBy     String?
-  createdAt     DateTime          @default(now())
+  id             String             @id @default(uuid())
+  reservationId  String
+  previousStatus ReservationStatus?
+  newStatus      ReservationStatus
+  comment        String?
+  changedBy      String?
+  createdAt      DateTime           @default(now())
 
   reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
@@ -292,26 +343,35 @@ model ReservationHistory {
 }
 
 model Maintenance {
-  id            String            @id @default(uuid())
-  vehicleId     String
-  type          MaintenanceType
-  description   String
-  priority      Priority          @default(MEDIUM)
-  status        MaintenanceStatus @default(SCHEDULED)
-  scheduledDate DateTime
-  completedDate DateTime?
-  cost          Float?
-  vendor        String?
-  notes         String?
-  createdById   String
-  assignedToId  String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  vehicleId        String
+  type             MaintenanceType
+  description      String
+  priority         Priority          @default(MEDIUM)
+  status           MaintenanceStatus @default(SCHEDULED)
+  scheduledDate    DateTime
+  startDate        DateTime?
+  completedDate    DateTime?
+  estimatedCost    Float?
+  actualCost       Float?
+  mileageAtService Int?
+  partsReplaced    String[]
+  providerName     String?
+  providerContact  String?
+  invoiceNumber    String?
+  cost             Float?
+  vendor           String?
+  notes            String?
+  createdById      String
+  assignedToId     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   // Relations
-  vehicle    Vehicle @relation(fields: [vehicleId], references: [id])
-  createdBy  User    @relation("MaintenanceCreatedBy", fields: [createdById], references: [id])
-  assignedTo User?   @relation("MaintenanceAssignedTo", fields: [assignedToId], references: [id])
+  vehicle    Vehicle    @relation(fields: [vehicleId], references: [id])
+  createdBy  User       @relation("MaintenanceCreatedBy", fields: [createdById], references: [id])
+  assignedTo User?      @relation("MaintenanceAssignedTo", fields: [assignedToId], references: [id])
+  documents  Document[]
 
   @@index([vehicleId])
   @@index([status])
@@ -339,31 +399,40 @@ model Incident {
 }
 
 model Document {
-  id         String    @id @default(uuid())
-  vehicleId  String
-  name       String
-  type       String
-  url        String
-  expiryDate DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  vehicleId     String
+  reservationId String?
+  maintenanceId String?
+  name          String
+  type          String
+  url           String
+  expiryDate    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  maintenance Maintenance? @relation(fields: [maintenanceId], references: [id], onDelete: Cascade)
 
   @@index([vehicleId])
+  @@index([reservationId])
+  @@index([maintenanceId])
   @@index([expiryDate])
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  data      Json?
-  isRead    Boolean          @default(false)
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
+  id         String               @id @default(uuid())
+  userId     String
+  type       NotificationType
+  priority   NotificationPriority @default(MEDIUM)
+  title      String
+  message    String
+  data       Json?
+  isRead     Boolean              @default(false)
+  readAt     DateTime?
+  entityType String?
+  entityId   String?
+  createdAt  DateTime             @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -373,17 +442,23 @@ model Notification {
 }
 
 model NotificationPreference {
-  id            String           @id @default(uuid())
-  userId        String
-  type          NotificationType
-  emailEnabled  Boolean          @default(true)
-  pushEnabled   Boolean          @default(true)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  inAppReservation Boolean  @default(true)
+  inAppApproval    Boolean  @default(true)
+  inAppReminder    Boolean  @default(true)
+  inAppMaintenance Boolean  @default(true)
+  inAppSystem      Boolean  @default(true)
+  emailReservation Boolean  @default(true)
+  emailApproval    Boolean  @default(true)
+  emailReminder    Boolean  @default(true)
+  emailMaintenance Boolean  @default(true)
+  emailSystem      Boolean  @default(true)
+  reminderBefore   Int      @default(24)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, type])
 }
 
 model AuditLog {

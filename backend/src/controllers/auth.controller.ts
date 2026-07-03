@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import * as authService from '../../../../backend/src/services/auth.service.js';
+import * as authService from '../services/auth.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function register(
@@ -256,7 +256,7 @@ export async function revokeSession(
   next: NextFunction
 ): Promise<void> {
   try {
-    await authService.revokeSession(req.user!.id, req.params.sessionId);
+    await authService.revokeSession(req.user!.id, req.params.sessionId as string);
 
     res.status(200).json({
       success: true,

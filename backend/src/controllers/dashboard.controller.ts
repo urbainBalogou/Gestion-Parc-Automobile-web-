@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as dashboardService from '../../../../backend/src/services/dashboard.service.js';
+import * as dashboardService from '../services/dashboard.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function getDashboardStats(

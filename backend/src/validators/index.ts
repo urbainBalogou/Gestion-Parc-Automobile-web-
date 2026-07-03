@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { Role, User } from '@prisma/client';
+import { Role } from '@prisma/client';
 
 export interface JwtPayload {
   userId: string;
@@ -18,14 +18,25 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-export type SafeUser = Omit<
-  User,
-  | 'password'
-  | 'emailVerificationToken'
-  | 'passwordResetToken'
-  | 'passwordResetExpires'
-  | 'twoFactorSecret'
->;
+export interface SafeUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  avatar: string | null;
+  role: Role;
+  isActive: boolean;
+  isEmailVerified?: boolean;
+  twoFactorEnabled: boolean;
+  departmentId?: string | null;
+  lastLoginAt?: Date | null;
+  passwordChangedAt?: Date | null;
+  driverLicenseNumber?: string | null;
+  driverLicenseExpiry?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export interface PaginationParams {
   page: number;

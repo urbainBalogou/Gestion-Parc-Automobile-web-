@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as vehicleService from '../../../../backend/src/services/vehicle.service.js';
+import * as vehicleService from '../services/vehicle.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function createVehicle(
@@ -26,7 +26,9 @@ export async function getVehicles(
   next: NextFunction
 ): Promise<void> {
   try {
-    const result = await vehicleService.getVehicles(req.query as Record<string, string>);
+    const result = await vehicleService.getVehicles(
+      req.query as unknown as Parameters<typeof vehicleService.getVehicles>[0]
+    );
 
     res.status(200).json({
       success: true,
@@ -43,7 +45,7 @@ export async function getVehicleById(
   next: NextFunction
 ): Promise<void> {
   try {
-    const vehicle = await vehicleService.getVehicleById(req.params.id);
+    const vehicle = await vehicleService.getVehicleById(req.params.id as string);
 
     res.status(200).json({
       success: true,
@@ -61,7 +63,7 @@ export async function updateVehicle(
 ): Promise<void> {
   try {
     const vehicle = await vehicleService.updateVehicle(
-      req.params.id,
+      req.params.id as string,
       req.body,
       req.user!.id
     );
@@ -82,7 +84,7 @@ export async function deleteVehicle(
   next: NextFunction
 ): Promise<void> {
   try {
-    await vehicleService.deleteVehicle(req.params.id, req.user!.id);
+    await vehicleService.deleteVehicle(req.params.id as string, req.user!.id);
 
     res.status(200).json({
       success: true,
@@ -100,7 +102,7 @@ export async function updateVehicleStatus(
 ): Promise<void> {
   try {
     const vehicle = await vehicleService.updateVehicleStatus(
-      req.params.id,
+      req.params.id as string,
       req.body.status,
       req.user!.id,
       req.body.reason
@@ -123,7 +125,7 @@ export async function updateVehicleMileage(
 ): Promise<void> {
   try {
     const vehicle = await vehicleService.updateVehicleMileage(
-      req.params.id,
+      req.params.id as string,
       req.body.mileage,
       req.user!.id
     );
@@ -166,7 +168,7 @@ export async function getVehicleStatistics(
   next: NextFunction
 ): Promise<void> {
   try {
-    const stats = await vehicleService.getVehicleStatistics(req.params.id);
+    const stats = await vehicleService.getVehicleStatistics(req.params.id as string);
 
     res.status(200).json({
       success: true,
@@ -193,7 +195,7 @@ export async function addPhoto(
 
     const url = `/uploads/${req.file.filename}`;
     await vehicleService.addVehiclePhoto(
-      req.params.id,
+      req.params.id as string,
       url,
       req.body.isPrimary === 'true'
     );
@@ -214,7 +216,7 @@ export async function removePhoto(
   next: NextFunction
 ): Promise<void> {
   try {
-    await vehicleService.removeVehiclePhoto(req.params.id, req.params.photoId);
+    await vehicleService.removeVehiclePhoto(req.params.id as string, req.params.photoId as string);
 
     res.status(200).json({
       success: true,
@@ -233,7 +235,7 @@ export async function toggleFavorite(
   try {
     const isFavorite = await vehicleService.toggleFavorite(
       req.user!.id,
-      req.params.id
+      req.params.id as string
     );
 
     res.status(200).json({

@@ -60,6 +60,7 @@ export async function createMaintenance(
       type: data.type,
       description: data.description,
       scheduledDate: new Date(data.scheduledDate),
+      createdById: userId,
       estimatedCost: data.estimatedCost,
       providerName: data.providerName,
       providerContact: data.providerContact,
@@ -74,7 +75,7 @@ export async function createMaintenance(
       action: 'CREATE',
       entityType: 'maintenance',
       entityId: maintenance.id,
-      newValue: data as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
@@ -99,7 +100,7 @@ export async function createMaintenance(
     `Maintenance created for vehicle ${vehicle.registrationNumber}: ${data.type}`
   );
 
-  return maintenance;
+  return maintenance as MaintenanceWithRelations;
 }
 
 export async function getMaintenances(
@@ -204,8 +205,8 @@ export async function updateMaintenance(
       action: 'UPDATE',
       entityType: 'maintenance',
       entityId: id,
-      oldValue: existing as unknown as Prisma.InputJsonValue,
-      newValue: data as Prisma.InputJsonValue,
+      oldValues: existing as unknown as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
@@ -255,8 +256,8 @@ export async function startMaintenance(
       action: 'STATUS_CHANGE',
       entityType: 'maintenance',
       entityId: id,
-      oldValue: { status: 'SCHEDULED' } as Prisma.InputJsonValue,
-      newValue: { status: 'IN_PROGRESS' } as Prisma.InputJsonValue,
+      oldValues: { status: 'SCHEDULED' } as Prisma.InputJsonValue,
+      newValues: { status: 'IN_PROGRESS' } as Prisma.InputJsonValue,
     },
   });
 
@@ -320,8 +321,8 @@ export async function completeMaintenance(
       action: 'STATUS_CHANGE',
       entityType: 'maintenance',
       entityId: id,
-      oldValue: { status: 'IN_PROGRESS' } as Prisma.InputJsonValue,
-      newValue: { status: 'COMPLETED', ...data } as Prisma.InputJsonValue,
+      oldValues: { status: 'IN_PROGRESS' } as Prisma.InputJsonValue,
+      newValues: { status: 'COMPLETED', ...data } as Prisma.InputJsonValue,
     },
   });
 
@@ -371,8 +372,8 @@ export async function cancelMaintenance(
       action: 'STATUS_CHANGE',
       entityType: 'maintenance',
       entityId: id,
-      oldValue: { status: existing.status } as Prisma.InputJsonValue,
-      newValue: { status: 'CANCELLED', reason } as Prisma.InputJsonValue,
+      oldValues: { status: existing.status } as Prisma.InputJsonValue,
+      newValues: { status: 'CANCELLED', reason } as Prisma.InputJsonValue,
     },
   });
 

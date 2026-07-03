@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as userService from '../../../../backend/src/services/user.service.js';
+import * as userService from '../services/user.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function createUser(
@@ -26,7 +26,9 @@ export async function getUsers(
   next: NextFunction
 ): Promise<void> {
   try {
-    const result = await userService.getUsers(req.query as Record<string, string>);
+    const result = await userService.getUsers(
+      req.query as unknown as Parameters<typeof userService.getUsers>[0]
+    );
 
     res.status(200).json({
       success: true,
@@ -43,7 +45,7 @@ export async function getUserById(
   next: NextFunction
 ): Promise<void> {
   try {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserById(req.params.id as string);
 
     res.status(200).json({
       success: true,
@@ -61,7 +63,7 @@ export async function updateUser(
 ): Promise<void> {
   try {
     const user = await userService.updateUser(
-      req.params.id,
+      req.params.id as string,
       req.body,
       req.user!.id
     );
@@ -83,7 +85,7 @@ export async function updateUserRole(
 ): Promise<void> {
   try {
     const user = await userService.updateUserRole(
-      req.params.id,
+      req.params.id as string,
       req.body.role,
       req.user!.id
     );
@@ -104,7 +106,7 @@ export async function toggleUserStatus(
   next: NextFunction
 ): Promise<void> {
   try {
-    const user = await userService.toggleUserStatus(req.params.id, req.user!.id);
+    const user = await userService.toggleUserStatus(req.params.id as string, req.user!.id);
 
     res.status(200).json({
       success: true,
@@ -122,7 +124,7 @@ export async function deleteUser(
   next: NextFunction
 ): Promise<void> {
   try {
-    await userService.deleteUser(req.params.id, req.user!.id);
+    await userService.deleteUser(req.params.id as string, req.user!.id);
 
     res.status(200).json({
       success: true,
@@ -140,7 +142,7 @@ export async function resetUserPassword(
 ): Promise<void> {
   try {
     await userService.resetUserPassword(
-      req.params.id,
+      req.params.id as string,
       req.body.password,
       req.user!.id
     );

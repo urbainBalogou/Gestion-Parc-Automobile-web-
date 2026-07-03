@@ -67,12 +67,13 @@ export async function getReservationTrends(
 
   for (let i = 0; i <= days; i++) {
     const date = subDays(new Date(), days - i);
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = date.toISOString().split('T')[0] ?? date.toISOString();
     dateMap.set(dateKey, { created: 0, completed: 0 });
   }
 
   for (const res of reservations) {
-    const dateKey = res.createdAt.toISOString().split('T')[0];
+    const dateKey =
+      res.createdAt.toISOString().split('T')[0] ?? res.createdAt.toISOString();
     const entry = dateMap.get(dateKey);
     if (entry) {
       entry.created++;
@@ -370,7 +371,7 @@ export async function getRecentActivity(
     type: 'audit',
     action: log.action,
     entityType: log.entityType,
-    entityId: log.entityId,
+    entityId: log.entityId || '',
     userId: log.userId || '',
     userName: log.user
       ? `${log.user.firstName} ${log.user.lastName}`

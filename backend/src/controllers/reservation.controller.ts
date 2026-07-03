@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import * as reservationService from '../../../../backend/src/services/reservation.service.js';
+import * as reservationService from '../services/reservation.service.js';
 import type { AuthenticatedRequest } from '../validators/index.js';
 
 export async function createReservation(
@@ -30,7 +30,7 @@ export async function getReservations(
 ): Promise<void> {
   try {
     const result = await reservationService.getReservations(
-      req.query as Record<string, string>,
+      req.query as unknown as Parameters<typeof reservationService.getReservations>[0],
       req.user!.id,
       req.user!.role
     );
@@ -51,7 +51,7 @@ export async function getReservationById(
 ): Promise<void> {
   try {
     const reservation = await reservationService.getReservationById(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.user!.role
     );
@@ -72,7 +72,7 @@ export async function updateReservation(
 ): Promise<void> {
   try {
     const reservation = await reservationService.updateReservation(
-      req.params.id,
+      req.params.id as string,
       req.body,
       req.user!.id,
       req.user!.role
@@ -95,7 +95,7 @@ export async function approveReservation(
 ): Promise<void> {
   try {
     const reservation = await reservationService.approveReservation(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body.comment
     );
@@ -117,7 +117,7 @@ export async function rejectReservation(
 ): Promise<void> {
   try {
     const reservation = await reservationService.rejectReservation(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body.reason
     );
@@ -139,7 +139,7 @@ export async function cancelReservation(
 ): Promise<void> {
   try {
     const reservation = await reservationService.cancelReservation(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body.reason
     );
@@ -161,7 +161,7 @@ export async function checkIn(
 ): Promise<void> {
   try {
     const reservation = await reservationService.checkIn(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body
     );
@@ -183,7 +183,7 @@ export async function checkOut(
 ): Promise<void> {
   try {
     const reservation = await reservationService.checkOut(
-      req.params.id,
+      req.params.id as string,
       req.user!.id,
       req.body
     );

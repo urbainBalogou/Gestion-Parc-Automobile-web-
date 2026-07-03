@@ -32,6 +32,6 @@
       "@config/*": ["src/config/*"]
     }
   },
-  "include": ["src/**/*", "prisma/**/*", "../projet-pratique/backend/src/controllers/auth.controller.ts", "../projet-pratique/backend/src/controllers/dashboard.controller.ts", "../projet-pratique/backend/src/controllers/maintenance.controller.ts", "../projet-pratique/backend/src/controllers/notification.controller.ts", "../projet-pratique/backend/src/controllers/reservation.controller.ts", "../projet-pratique/backend/src/controllers/user.controller.ts", "../projet-pratique/backend/src/controllers/vehicle.controller.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]
 }

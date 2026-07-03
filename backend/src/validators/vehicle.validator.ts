@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { VehicleStatus, VehicleType, FuelType, TransmissionType } from '@prisma/client';
+import { VehicleStatus, VehicleType, FuelType, Transmission } from '@prisma/client';
 
 export const createVehicleSchema = z.object({
   registrationNumber: z.string().min(1, 'Registration number is required'),
@@ -9,7 +9,7 @@ export const createVehicleSchema = z.object({
   type: z.nativeEnum(VehicleType),
   status: z.nativeEnum(VehicleStatus).optional(),
   fuelType: z.nativeEnum(FuelType).optional(),
-  transmission: z.nativeEnum(TransmissionType).optional(),
+  transmission: z.nativeEnum(Transmission).optional(),
   seats: z.number().int().min(1).max(50).optional(),
   doors: z.number().int().min(1).max(10).optional(),
   color: z.string().optional(),

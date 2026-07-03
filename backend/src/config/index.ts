@@ -1,7 +1,24 @@
+import fs from 'fs';
+import path from 'path';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config();
+const rootEnvPath = path.resolve(process.cwd(), '.env');
+const legacySrcEnvPath = path.resolve(process.cwd(), 'src', '.env');
+
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath });
+} else if (fs.existsSync(legacySrcEnvPath)) {
+  dotenv.config({ path: legacySrcEnvPath });
+}
+
+const rawEnv = {
+  ...process.env,
+  SMTP_FROM: process.env.SMTP_FROM ?? process.env.EMAIL_FROM,
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? process.env.JWT_ACCESS_EXPIRY,
+  JWT_REFRESH_EXPIRES_IN:
+    process.env.JWT_REFRESH_EXPIRES_IN ?? process.env.JWT_REFRESH_EXPIRY,
+};
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -39,7 +56,7 @@ const envSchema = z.object({
   TWO_FACTOR_APP_NAME: z.string().default('TogoDataLab Vehicles'),
 });
 
-const envResult = envSchema.safeParse(process.env);
+const envResult = envSchema.safeParse(rawEnv);
 
 if (!envResult.success) {
   console.error('❌ Invalid environment variables:');

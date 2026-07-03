@@ -1,4 +1,4 @@
-import { Prisma, VehicleStatus } from '@prisma/client';
+import { Prisma, VehicleStatus, VehicleType } from '@prisma/client';
 import { prisma } from '../config/prisma.js';
 import { logger } from '../config/logger.js';
 import { NotFoundError, ConflictError } from '../utils/errors.js';
@@ -39,15 +39,36 @@ export async function createVehicle(
     throw new ConflictError('Vehicle with this registration number already exists');
   }
 
+  const vehicleData: Prisma.VehicleUncheckedCreateInput = {
+    registrationNumber: data.registrationNumber,
+    brand: data.brand,
+    model: data.model,
+    year: data.year,
+    type: data.type,
+    fuelType: data.fuelType ?? 'GASOLINE',
+    transmission: data.transmission ?? 'MANUAL',
+    seats: data.seats ?? 5,
+    doors: data.doors,
+    color: data.color,
+    engineCapacity: data.engineCapacity,
+    horsePower: data.horsePower,
+    currentMileage: data.currentMileage ?? 0,
+    fuelConsumption: data.fuelConsumption,
+    acquisitionCost: data.acquisitionCost,
+    locationId: data.locationId,
+    dailyRate: data.dailyRate,
+    mileageRate: data.mileageRate,
+    notes: data.notes,
+    features: [],
+    qrCode: generateQRCode(),
+    insuranceExpiry: data.insuranceExpiry ? new Date(data.insuranceExpiry) : null,
+    technicalInspectionExpiry: data.technicalInspectionExpiry
+      ? new Date(data.technicalInspectionExpiry)
+      : null,
+  };
+
   const vehicle = await prisma.vehicle.create({
-    data: {
-      ...data,
-      qrCode: generateQRCode(),
-      insuranceExpiry: data.insuranceExpiry ? new Date(data.insuranceExpiry) : null,
-      technicalInspectionExpiry: data.technicalInspectionExpiry
-        ? new Date(data.technicalInspectionExpiry)
-        : null,
-    },
+    data: vehicleData,
     include: {
       location: true,
       photos: true,
@@ -63,13 +84,13 @@ export async function createVehicle(
       action: 'CREATE',
       entityType: 'vehicle',
       entityId: vehicle.id,
-      newValue: data as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
   logger.info(`Vehicle created: ${vehicle.registrationNumber}`);
 
-  return vehicle;
+  return vehicle as VehicleWithRelations;
 }
 
 export async function getVehicles(
@@ -218,8 +239,8 @@ export async function updateVehicle(
       action: 'UPDATE',
       entityType: 'vehicle',
       entityId: id,
-      oldValue: existing as unknown as Prisma.InputJsonValue,
-      newValue: data as Prisma.InputJsonValue,
+      oldValues: existing as unknown as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
@@ -262,7 +283,7 @@ export async function deleteVehicle(id: string, userId: string): Promise<void> {
       action: 'DELETE',
       entityType: 'vehicle',
       entityId: id,
-      oldValue: { registrationNumber: vehicle.registrationNumber } as Prisma.InputJsonValue,
+      oldValues: { registrationNumber: vehicle.registrationNumber } as Prisma.InputJsonValue,
     },
   });
 
@@ -301,8 +322,8 @@ export async function updateVehicleStatus(
       action: 'STATUS_CHANGE',
       entityType: 'vehicle',
       entityId: id,
-      oldValue: { status: vehicle.status } as Prisma.InputJsonValue,
-      newValue: { status, reason } as Prisma.InputJsonValue,
+      oldValues: { status: vehicle.status } as Prisma.InputJsonValue,
+      newValues: { status, reason } as Prisma.InputJsonValue,
     },
   });
 
@@ -346,8 +367,8 @@ export async function updateVehicleMileage(
       action: 'UPDATE',
       entityType: 'vehicle',
       entityId: id,
-      oldValue: { currentMileage: vehicle.currentMileage } as Prisma.InputJsonValue,
-      newValue: { currentMileage: mileage } as Prisma.InputJsonValue,
+      oldValues: { currentMileage: vehicle.currentMileage } as Prisma.InputJsonValue,
+      newValues: { currentMileage: mileage } as Prisma.InputJsonValue,
     },
   });
 
@@ -388,7 +409,7 @@ export async function removeVehiclePhoto(
   vehicleId: string,
   photoId: string
 ): Promise<void> {
-  await prisma.vehiclePhoto.delete({
+  await prisma.vehiclePhoto.deleteMany({
     where: {
       id: photoId,
       vehicleId,
@@ -406,7 +427,7 @@ export async function getAvailableVehicles(
     where: {
       isActive: true,
       status: VehicleStatus.AVAILABLE,
-      ...(type && { type: type as VehicleStatus }),
+      ...(type && { type: type as VehicleType }),
     },
     include: {
       location: true,

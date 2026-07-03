@@ -35,11 +35,15 @@ function excludePassword(user: {
   lastName: string;
   phone: string | null;
   avatar: string | null;
-  role: string;
+  role: SafeUser['role'];
   isActive: boolean;
-  isEmailVerified: boolean;
+  isEmailVerified?: boolean;
   twoFactorEnabled: boolean;
-  departmentId: string | null;
+  departmentId?: string | null;
+  lastLoginAt?: Date | null;
+  passwordChangedAt?: Date | null;
+  driverLicenseNumber?: string | null;
+  driverLicenseExpiry?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): SafeUser {
@@ -49,13 +53,13 @@ function excludePassword(user: {
 
 function generateAccessToken(payload: Omit<JwtPayload, 'type'>): string {
   return jwt.sign({ ...payload, type: 'access' }, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
+    expiresIn: config.jwt.expiresIn as jwt.SignOptions['expiresIn'],
   });
 }
 
 function generateRefreshToken(payload: Omit<JwtPayload, 'type'>): string {
   return jwt.sign({ ...payload, type: 'refresh' }, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpiresIn,
+    expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'],
   });
 }
 
@@ -97,6 +101,10 @@ export async function register(
       isEmailVerified: true,
       twoFactorEnabled: true,
       departmentId: true,
+      lastLoginAt: true,
+      passwordChangedAt: true,
+      driverLicenseNumber: true,
+      driverLicenseExpiry: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -131,7 +139,7 @@ export async function register(
       action: 'CREATE',
       entityType: 'user',
       entityId: user.id,
-      newValue: { email: user.email },
+      newValues: { email: user.email },
       ipAddress,
     },
   });
@@ -337,7 +345,6 @@ export async function refreshAccessToken(
       data: {
         refreshToken: hashToken(newRefreshToken),
         ipAddress,
-        updatedAt: new Date(),
       },
     });
 
@@ -398,7 +405,7 @@ export async function logoutAllSessions(
       action: 'LOGOUT',
       entityType: 'user',
       entityId: userId,
-      newValue: { allSessions: true },
+      newValues: { allSessions: true },
       ipAddress,
     },
   });
@@ -658,8 +665,8 @@ export async function disable2FA(
       action: 'UPDATE',
       entityType: 'user',
       entityId: userId,
-      oldValue: { twoFactorEnabled: true },
-      newValue: { twoFactorEnabled: false },
+      oldValues: { twoFactorEnabled: true },
+      newValues: { twoFactorEnabled: false },
       ipAddress,
     },
   });

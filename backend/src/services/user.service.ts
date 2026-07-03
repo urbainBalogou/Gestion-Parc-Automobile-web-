@@ -10,7 +10,7 @@ import {
   generateToken,
   hashToken,
 } from '../utils/helpers.js';
-import type { PaginatedResponse, SafeUser } from '../validators/index.js';
+import type { PaginatedResponse } from '../validators/index.js';
 import { sendWelcomeEmail } from './email.service.js';
 import type {
   CreateUserInput,
@@ -108,7 +108,7 @@ export async function createUser(
       action: 'CREATE',
       entityType: 'user',
       entityId: user.id,
-      newValue: { email: user.email, role: user.role } as Prisma.InputJsonValue,
+      newValues: { email: user.email, role: user.role } as Prisma.InputJsonValue,
     },
   });
 
@@ -225,8 +225,8 @@ export async function updateUser(
       action: 'UPDATE',
       entityType: 'user',
       entityId: id,
-      oldValue: existing as unknown as Prisma.InputJsonValue,
-      newValue: data as Prisma.InputJsonValue,
+      oldValues: existing as unknown as Prisma.InputJsonValue,
+      newValues: data as Prisma.InputJsonValue,
     },
   });
 
@@ -272,8 +272,8 @@ export async function updateUserRole(
       action: 'ROLE_CHANGE',
       entityType: 'user',
       entityId: id,
-      oldValue: { role: existing.role } as Prisma.InputJsonValue,
-      newValue: { role } as Prisma.InputJsonValue,
+      oldValues: { role: existing.role } as Prisma.InputJsonValue,
+      newValues: { role } as Prisma.InputJsonValue,
     },
   });
 
@@ -326,8 +326,8 @@ export async function toggleUserStatus(
       action: 'STATUS_CHANGE',
       entityType: 'user',
       entityId: id,
-      oldValue: { isActive: existing.isActive } as Prisma.InputJsonValue,
-      newValue: { isActive: user.isActive } as Prisma.InputJsonValue,
+      oldValues: { isActive: existing.isActive } as Prisma.InputJsonValue,
+      newValues: { isActive: user.isActive } as Prisma.InputJsonValue,
     },
   });
 
@@ -389,7 +389,7 @@ export async function deleteUser(id: string, deleterId: string): Promise<void> {
       action: 'DELETE',
       entityType: 'user',
       entityId: id,
-      oldValue: { email: user.email } as Prisma.InputJsonValue,
+      oldValues: { email: user.email } as Prisma.InputJsonValue,
     },
   });
 
@@ -429,7 +429,7 @@ export async function resetUserPassword(
       action: 'PASSWORD_CHANGE',
       entityType: 'user',
       entityId: id,
-      newValue: { resetBy: resetById } as Prisma.InputJsonValue,
+      newValues: { resetBy: resetById } as Prisma.InputJsonValue,
     },
   });
 
