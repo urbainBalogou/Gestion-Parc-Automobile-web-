@@ -52,6 +52,10 @@ export const reservationService = {
     return response.data.data!;
   },
 
+  async getReservation(id: string): Promise<Reservation> {
+    return this.getReservationById(id);
+  },
+
   async createReservation(data: CreateReservationInput): Promise<Reservation> {
     const response = await api.post<ApiResponse<Reservation>>(
       '/reservations',
@@ -90,7 +94,10 @@ export const reservationService = {
     return response.data.data!;
   },
 
-  async cancelReservation(id: string, reason: string): Promise<Reservation> {
+  async cancelReservation(
+    id: string,
+    reason = 'Reservation annulee'
+  ): Promise<Reservation> {
     const response = await api.post<ApiResponse<Reservation>>(
       `/reservations/${id}/cancel`,
       { reason }
@@ -100,25 +107,36 @@ export const reservationService = {
 
   async checkIn(
     id: string,
-    mileage: number,
+    mileageOrData: number | { mileage: number; notes?: string },
     notes?: string
   ): Promise<Reservation> {
+    const data =
+      typeof mileageOrData === 'number'
+        ? { mileage: mileageOrData, notes }
+        : mileageOrData;
     const response = await api.post<ApiResponse<Reservation>>(
       `/reservations/${id}/check-in`,
-      { mileage, notes }
+      data
     );
     return response.data.data!;
   },
 
   async checkOut(
     id: string,
-    data: {
-      mileage: number;
-      notes?: string;
-      rating?: number;
-      feedback?: string;
-    }
+    dataOrMileage:
+      | number
+      | {
+          mileage: number;
+          notes?: string;
+          rating?: number;
+          feedback?: string;
+        },
+    notes?: string
   ): Promise<Reservation> {
+    const data =
+      typeof dataOrMileage === 'number'
+        ? { mileage: dataOrMileage, notes }
+        : dataOrMileage;
     const response = await api.post<ApiResponse<Reservation>>(
       `/reservations/${id}/check-out`,
       data

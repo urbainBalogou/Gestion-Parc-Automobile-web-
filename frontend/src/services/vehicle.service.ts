@@ -58,6 +58,10 @@ export const vehicleService = {
     return response.data.data!;
   },
 
+  async getVehicle(id: string): Promise<Vehicle> {
+    return this.getVehicleById(id);
+  },
+
   async createVehicle(data: CreateVehicleInput): Promise<Vehicle> {
     const response = await api.post<ApiResponse<Vehicle>>('/vehicles', data);
     return response.data.data!;
@@ -135,6 +139,14 @@ export const vehicleService = {
       `/vehicles/${id}/favorite`
     );
     return response.data.data!;
+  },
+
+  async addToFavorites(id: string): Promise<{ isFavorite: boolean }> {
+    return this.toggleFavorite(id);
+  },
+
+  async removeFromFavorites(id: string): Promise<{ isFavorite: boolean }> {
+    return this.toggleFavorite(id);
   },
 
   async getFavorites(): Promise<Vehicle[]> {

@@ -53,7 +53,7 @@ export function NotificationsPage() {
     queryKey: ['notifications', filter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filter === 'unread') params.append('unread', 'true');
+      if (filter === 'unread') params.append('unreadOnly', 'true');
       const response = await api.get(`/notifications?${params}`);
       return response.data;
     },
@@ -61,7 +61,7 @@ export function NotificationsPage() {
 
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      await api.patch(`/notifications/${id}/read`);
+      await api.post(`/notifications/${id}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -70,7 +70,7 @@ export function NotificationsPage() {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      await api.patch('/notifications/read-all');
+      await api.post('/notifications/mark-all-read');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });

@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { reservationService } from '@/services/reservation.service';
 import { cn } from '@/lib/utils';
 import type { ReservationStatus } from '@/types';
@@ -32,6 +31,7 @@ const MONTHS = [
 ];
 
 const statusColors: Record<ReservationStatus, string> = {
+  DRAFT: 'bg-slate-400',
   PENDING: 'bg-yellow-500',
   APPROVED: 'bg-blue-500',
   REJECTED: 'bg-red-500',

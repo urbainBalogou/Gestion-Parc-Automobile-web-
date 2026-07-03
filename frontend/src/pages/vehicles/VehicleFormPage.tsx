@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { vehicleService } from '@/services/vehicle.service';
 import { useToast } from '@/components/ui/toast';
+import { getFileUrl } from '@/lib/utils';
 
 const vehicleSchema = z.object({
   registrationNumber: z.string().min(1, 'Numero d\'immatriculation requis'),
@@ -104,8 +105,32 @@ export function VehicleFormPage() {
       : undefined,
   });
 
+  // Les champs date HTML renvoient 'YYYY-MM-DD' ou '' ; le backend attend soit
+  // un datetime ISO complet, soit rien du tout (pas une chaine vide).
+  function toApiPayload(data: VehicleForm) {
+    return {
+      ...data,
+      insuranceExpiry: data.insuranceExpiry
+        ? new Date(data.insuranceExpiry).toISOString()
+        : undefined,
+      technicalInspectionExpiry: data.technicalInspectionExpiry
+        ? new Date(data.technicalInspectionExpiry).toISOString()
+        : undefined,
+    };
+  }
+
+  async function uploadPendingPhotos(vehicleId: string) {
+    for (const photo of photos) {
+      await vehicleService.uploadPhoto(vehicleId, photo);
+    }
+  }
+
   const createMutation = useMutation({
-    mutationFn: (data: VehicleForm) => vehicleService.createVehicle(data),
+    mutationFn: async (data: VehicleForm) => {
+      const newVehicle = await vehicleService.createVehicle(toApiPayload(data));
+      await uploadPendingPhotos(newVehicle.id);
+      return newVehicle;
+    },
     onSuccess: (newVehicle) => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       addToast({
@@ -125,7 +150,11 @@ export function VehicleFormPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (data: VehicleForm) => vehicleService.updateVehicle(id!, data),
+    mutationFn: async (data: VehicleForm) => {
+      const updated = await vehicleService.updateVehicle(id!, toApiPayload(data));
+      await uploadPendingPhotos(id!);
+      return updated;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });
       queryClient.invalidateQueries({ queryKey: ['vehicle', id] });
@@ -152,6 +181,20 @@ export function VehicleFormPage() {
       createMutation.mutate(data);
     }
   };
+
+  const removeExistingPhotoMutation = useMutation({
+    mutationFn: (photoId: string) => vehicleService.removePhoto(id!, photoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vehicle', id] });
+    },
+    onError: () => {
+      addToast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer la photo.',
+        type: 'error',
+      });
+    },
+  });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -402,6 +445,24 @@ export function VehicleFormPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {isEditing &&
+                vehicle?.photos.map((photo) => (
+                  <div key={photo.id} className="relative group">
+                    <img
+                      src={getFileUrl(photo.url)}
+                      alt="Photo du vehicule"
+                      className="w-full aspect-video object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingPhotoMutation.mutate(photo.id)}
+                      disabled={removeExistingPhotoMutation.isPending}
+                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
               {photos.map((photo, index) => (
                 <div key={index} className="relative group">
                   <img

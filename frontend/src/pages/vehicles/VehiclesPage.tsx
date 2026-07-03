@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { vehicleService } from '@/services/vehicle.service';
 import { useHasMinRole } from '@/stores/auth.store';
-import { cn, formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency, getFileUrl } from '@/lib/utils';
 import type { Vehicle, VehicleStatus } from '@/types';
 
 const statusColors: Record<VehicleStatus, string> = {
@@ -55,7 +55,7 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
         <div className="aspect-video bg-gray-100 relative overflow-hidden rounded-t-lg">
           {primaryPhoto ? (
             <img
-              src={primaryPhoto.url}
+              src={getFileUrl(primaryPhoto.url)}
               alt={`${vehicle.brand} ${vehicle.model}`}
               className="w-full h-full object-cover"
             />
@@ -116,7 +116,7 @@ function VehicleRow({ vehicle }: { vehicle: Vehicle }) {
       <div className="w-20 h-14 bg-gray-100 rounded overflow-hidden flex-shrink-0">
         {vehicle.photos[0] ? (
           <img
-            src={vehicle.photos[0].url}
+            src={getFileUrl(vehicle.photos[0].url)}
             alt={`${vehicle.brand} ${vehicle.model}`}
             className="w-full h-full object-cover"
           />

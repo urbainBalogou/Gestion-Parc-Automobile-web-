@@ -57,6 +57,18 @@ export function formatRelativeTime(date: Date | string): string {
   return "à l'instant";
 }
 
+// Backend returns relative paths for uploaded files (e.g. '/uploads/xxx.jpg').
+// Those are served by the API origin, not the frontend origin, so they need
+// to be resolved against it before being used as an <img src>.
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, '');
+
+export function getFileUrl(path: string | null | undefined): string {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_ORIGIN}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export function getInitials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }

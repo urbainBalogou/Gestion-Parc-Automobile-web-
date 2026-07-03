@@ -5,7 +5,6 @@ import {
   Calendar,
   Plus,
   Search,
-  Filter,
   Car,
   Clock,
   MapPin,
@@ -15,13 +14,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { reservationService } from '@/services/reservation.service';
 import { useAuthStore, useHasMinRole } from '@/stores/auth.store';
-import { formatDate, cn } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import type { ReservationStatus } from '@/types';
 
 const statusColors: Record<ReservationStatus, 'default' | 'secondary' | 'success' | 'warning' | 'destructive' | 'info'> = {
+  DRAFT: 'default',
   PENDING: 'warning',
   APPROVED: 'info',
   REJECTED: 'destructive',
@@ -31,6 +31,7 @@ const statusColors: Record<ReservationStatus, 'default' | 'secondary' | 'success
 };
 
 const statusLabels: Record<ReservationStatus, string> = {
+  DRAFT: 'Brouillon',
   PENDING: 'En attente',
   APPROVED: 'Approuvee',
   REJECTED: 'Rejetee',

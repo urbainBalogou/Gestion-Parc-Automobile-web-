@@ -74,12 +74,10 @@ const priorityLabels: Record<string, string> = {
 };
 
 const maintenanceTypes = [
-  { value: 'OIL_CHANGE', label: 'Vidange' },
-  { value: 'TIRE_CHANGE', label: 'Changement de pneus' },
-  { value: 'BRAKE_SERVICE', label: 'Freinage' },
+  { value: 'PREVENTIVE', label: 'Preventive' },
+  { value: 'CORRECTIVE', label: 'Corrective' },
   { value: 'INSPECTION', label: 'Inspection' },
   { value: 'REPAIR', label: 'Reparation' },
-  { value: 'OTHER', label: 'Autre' },
 ];
 
 export function MaintenancePage() {
@@ -93,7 +91,7 @@ export function MaintenancePage() {
 
   const [formData, setFormData] = useState({
     vehicleId: '',
-    type: 'OIL_CHANGE',
+    type: 'PREVENTIVE',
     description: '',
     scheduledDate: '',
     priority: 'MEDIUM',
@@ -109,7 +107,7 @@ export function MaintenancePage() {
       });
       if (search) params.append('search', search);
       if (statusFilter) params.append('status', statusFilter);
-      const response = await api.get(`/maintenance?${params}`);
+      const response = await api.get(`/maintenances?${params}`);
       return response.data;
     },
   });
@@ -124,7 +122,7 @@ export function MaintenancePage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const response = await api.post('/maintenance', {
+      const response = await api.post('/maintenances', {
         ...data,
         estimatedCost: data.estimatedCost ? Number(data.estimatedCost) : undefined,
       });
@@ -135,7 +133,7 @@ export function MaintenancePage() {
       setDialogOpen(false);
       setFormData({
         vehicleId: '',
-        type: 'OIL_CHANGE',
+        type: 'PREVENTIVE',
         description: '',
         scheduledDate: '',
         priority: 'MEDIUM',

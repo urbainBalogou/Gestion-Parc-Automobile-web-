@@ -17,6 +17,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -29,10 +30,11 @@ import {
 import { reservationService } from '@/services/reservation.service';
 import { useHasMinRole } from '@/stores/auth.store';
 import { useToast } from '@/components/ui/toast';
-import { formatDate, formatDateTime, formatCurrency } from '@/lib/utils';
+import { formatDateTime } from '@/lib/utils';
 import type { ReservationStatus } from '@/types';
 
 const statusColors: Record<ReservationStatus, 'default' | 'secondary' | 'success' | 'warning' | 'destructive' | 'info'> = {
+  DRAFT: 'default',
   PENDING: 'warning',
   APPROVED: 'info',
   REJECTED: 'destructive',
@@ -42,6 +44,7 @@ const statusColors: Record<ReservationStatus, 'default' | 'secondary' | 'success
 };
 
 const statusLabels: Record<ReservationStatus, string> = {
+  DRAFT: 'Brouillon',
   PENDING: 'En attente',
   APPROVED: 'Approuvee',
   REJECTED: 'Rejetee',
@@ -52,7 +55,6 @@ const statusLabels: Record<ReservationStatus, string> = {
 
 export function ReservationDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { addToast } = useToast();
   const isManager = useHasMinRole('MANAGER');
@@ -473,7 +475,7 @@ export function ReservationDetailPage() {
               )}
 
               {/* Cancel */}
-              {['PENDING', 'APPROVED'].includes(reservation.status) && (
+      {['PENDING', 'APPROVED'].includes(reservation.status) && (
                 <Button
                   variant="outline"
                   className="w-full"
@@ -531,7 +533,7 @@ export function ReservationDetailPage() {
             type="number"
             placeholder="Kilometrage au depart"
             value={mileage}
-            onChange={(e) => setMileage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMileage(e.target.value)}
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setCheckInDialogOpen(false)}>
@@ -560,7 +562,7 @@ export function ReservationDetailPage() {
             type="number"
             placeholder="Kilometrage au retour"
             value={mileage}
-            onChange={(e) => setMileage(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMileage(e.target.value)}
           />
           <DialogFooter>
             <Button

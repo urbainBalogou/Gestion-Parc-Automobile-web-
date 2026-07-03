@@ -33,7 +33,7 @@ import {
 import { vehicleService } from '@/services/vehicle.service';
 import { useHasMinRole } from '@/stores/auth.store';
 import { useToast } from '@/components/ui/toast';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, getFileUrl } from '@/lib/utils';
 import type { VehicleStatus } from '@/types';
 
 const statusColors: Record<VehicleStatus, 'success' | 'info' | 'warning' | 'destructive' | 'secondary'> = {
@@ -209,7 +209,7 @@ export function VehicleDetailPage() {
               <div className="aspect-video bg-gray-100 relative overflow-hidden rounded-t-lg">
                 {primaryPhoto ? (
                   <img
-                    src={primaryPhoto.url}
+                    src={getFileUrl(primaryPhoto.url)}
                     alt={`${vehicle.brand} ${vehicle.model}`}
                     className="w-full h-full object-cover"
                   />
@@ -238,7 +238,7 @@ export function VehicleDetailPage() {
                       }`}
                     >
                       <img
-                        src={photo.url}
+                        src={getFileUrl(photo.url)}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
